@@ -1,0 +1,15 @@
+{
+    "name": "royfee/excelhelper",
+    "description": "PHP Excel Helper - Write and read Spreadsheet with easy way based on PhpSpreadsheet",
+    "keywords": ["PhpSpreadsheet", "PHPExcel", "php", "excel", "sheet", "PhpSpreadsheet helper"],
+    "homepage": "https://github.com/royfee/excelhelper",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.12"
+    },
+    "autoload": {
+        "classmap": ["src/phpSpreadsheet"]
+    }
+}
