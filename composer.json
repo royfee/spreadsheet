@@ -5,7 +5,6 @@
     "homepage": "https://github.com/royfee/spreadsheet",
     "type": "library",
     "license": "MIT",
-    "minimum-stability": "stable",
     "require": {
         "phpoffice/phpspreadsheet": "^1.12"
     },
