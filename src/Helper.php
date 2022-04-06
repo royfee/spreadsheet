@@ -436,7 +436,6 @@ class Helper
 
     /**
      * Add rows to the actived sheet of PhpSpreadsheet
-     * 
      * @param array array of rowData for addRow()
      * @param array Row attributes refers to cell attributes
      * @return self
