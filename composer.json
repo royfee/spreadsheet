@@ -9,6 +9,6 @@
         "phpoffice/phpspreadsheet": "^1.12"
     },
     "autoload": {
-        "classmap": ["src"]
+	"classmap": ["src"]
     }
 }

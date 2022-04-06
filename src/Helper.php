@@ -1,7 +1,6 @@
 <?php
 
-namespace yidas\phpSpreadsheet;
-
+namespace royfee\Spreadsheet;
 use Exception;
 
 /**
