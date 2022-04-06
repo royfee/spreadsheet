@@ -1,6 +1,6 @@
 <?php
 
-namespace royfee\Spreadsheet;
+namespace royfee\spreadsheet;
 use Exception;
 
 /**
