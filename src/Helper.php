@@ -302,7 +302,6 @@ class Helper
     public static function setColumnOffset($var=0)
     {
         self::$_offsetCol = (int)$var;
-        
         return new static();
     }
 
@@ -353,19 +352,15 @@ class Helper
 
                 // Row attributes inheriting process (Based on default value of map)
                 foreach ($attributeMap as $aKey => $mapVal) {
-                
                     ${$aKey} = isset($rowAttributes[$aKey]) ? $rowAttributes[$aKey] : $mapVal;
                 }
 
                 // Cell Process
                 if (is_array($cell)) {
-
                     // Cell attributes process (Based on row attributes)
                     foreach ($attributeMap as $aKey => $mapVal) {
-                    
                         ${$aKey} = isset($cell[$aKey]) ? $cell[$aKey] : ${$aKey};
                     }
-                    
                 } else {
                     // Override value attribute
                     $value = $cell;
@@ -377,15 +372,13 @@ class Helper
                 // Set value
                 $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value);
 
-                // Setting the column's width
+                //Setting the column's width
                 if ($width) {
-                    
                     $sheetObj->getColumnDimension($colAlpha)->setWidth($width);
                 }
 
                 // Setting applyFromArray
                 if ($style) {
-                    
                     $sheetObj->getStyle($colAlpha.self::$_offsetRow)
                         ->applyFromArray($style);
                 }
@@ -433,9 +426,7 @@ class Helper
                 $posCol += $skip;
 
             } else {
-
                 $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $cell);
-                
                 $posCol++;
             }
         }
@@ -452,13 +443,34 @@ class Helper
      */
     public static function addRows($data, $rowAttributes=null)
     {
-         foreach ($data as $key => $row) {
-
+        foreach ($data as $key => $row) {
             self::addRow($row, $rowAttributes);
         }
-
         return new static();
     }
+
+    /**
+     *
+     * @return self
+    */
+	public static function addData($headerData,$bodyData){
+		//sheet header
+		self::addRow($headerData);
+
+		//sheet body
+		foreach($bodyData as $key => $line){
+			$rowData = [];
+			foreach($headerData as $hk => $hval){
+				if($hval['field'] == 'index'){
+					$rowData[] = $key + 1;
+				}else{
+					$rowData[] = isset($line[$hval['field']])?$line[$hval['field']]:'';
+				}
+			}
+            self::addRow($rowData);
+		}
+        return new static();
+	}
 
     /** 
      * Output file to browser
@@ -726,7 +738,7 @@ class Helper
         $sheetObj->getStyle($range)
             ->getAlignment()
             ->setWrapText($value); 
-        
+
         return new static();
     }
 

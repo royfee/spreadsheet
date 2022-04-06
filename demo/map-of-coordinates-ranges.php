@@ -1,8 +1,6 @@
 <?php
-
 require __DIR__ . '/_config.php';
-
-use \yidas\phpSpreadsheet\Helper;
+use \royfee\spreadsheet\Helper;
 
 Helper::newSpreadsheet()
     ->addRows([
@@ -21,8 +19,8 @@ Helper::newSpreadsheet()
     ->addRows([
         ['1', 'Computer','電腦','#15'],
         ['2', 'Phone','手機','#4','#62'],
-    ]);
-// ->output('Merged Excel');  
+    ])
+	->output('Merged Excel');  
 
 print_r(Helper::getCoordinateMap());
 print_r(Helper::getRangeMap());
