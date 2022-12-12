@@ -127,8 +127,13 @@ class Helper
         else {
             self::$_objSpreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         }
-        
+
         return self::resetSheet();
+    }
+
+    public static function newExportXml(){
+        $export = new xml\Export;
+        return $export->newSheet();
     }
 
     /** 
