@@ -127,13 +127,8 @@ class Helper
         else {
             self::$_objSpreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         }
-
+        
         return self::resetSheet();
-    }
-
-    public static function newExportXml(){
-        $export = new xml\Export;
-        return $export->newSheet();
     }
 
     /** 
@@ -326,21 +321,31 @@ class Helper
      * @param array Row attributes refers to cell attributes
      * @return self
      */
-    public static function addRow($rowData, $rowAttributes=null)
-    {
+    public static function addRow($rowData, $rowAttributes=null){
         $sheetObj = self::validSheetObj();
-        
+
         // Column pointer
         $posCol = self::$_offsetCol + 1;
 
         // Next row
         self::$_offsetRow++;
-        
+
+        $cellValue = function($posCol,$value) use ($sheetObj){
+            if(is_array($value)){
+                //设置类型时
+                if(isset($value['type']) && ($cellType = self::datatype($value['type']))){
+                    $sheetObj->setCellValueExplicitByColumnAndRow($posCol, self::$_offsetRow, $value['value'], $cellType);
+                }else{
+                    $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value['value']);
+                }
+            }else{
+                $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value);
+            }
+        };
+
         foreach ($rowData as $key => $cell) {
-            
             // Attribute defining Cell
             if (is_array($cell) || is_array($rowAttributes)) {
-
                 // Attr map: key as variable & value as value
                 $attributeMap = [
                     // Basic attributes
@@ -375,7 +380,9 @@ class Helper
                 $colAlpha = self::num2alpha($posCol);
 
                 // Set value
-                $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value);
+                $cellValue($posCol,$cell);
+
+                //$sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value);
 
                 //Setting the column's width
                 if ($width) {
@@ -431,11 +438,11 @@ class Helper
                 $posCol += $skip;
 
             } else {
-                $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $cell);
+                $cellValue($posCol,$cell);
+                //$sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $cell);
                 $posCol++;
             }
         }
-
         return new static();
     }
 
@@ -445,8 +452,7 @@ class Helper
      * @param array Row attributes refers to cell attributes
      * @return self
      */
-    public static function addRows($data, $rowAttributes=null)
-    {
+    public static function addRows($data, $rowAttributes=null){
         foreach ($data as $key => $row) {
             self::addRow($row, $rowAttributes);
         }
@@ -468,7 +474,7 @@ class Helper
 				if($hval['field'] == 'index'){
 					$rowData[] = $key + 1;
 				}else{
-					$rowData[] = isset($line[$hval['field']])?$line[$hval['field']]:'';
+                    $rowData[] = isset($line[$hval['field']])?$line[$hval['field']]:'';
 				}
 			}
             self::addRow($rowData);
@@ -877,5 +883,16 @@ class Helper
             
             throw new Exception("Invalid or empty PhpSpreadsheet Sheet Object", 400);
         }
+    }
+
+    /**
+     * Return Type | false
+     */
+    private static function datatype($type){
+        $type = strtoupper( $type);
+        if(!in_array( $type,['STRING2','STRING','FORMULA','NUMERIC','BOOL','NULL','INLINE','ERROR'])){
+            return false;
+        }
+        return constant('\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_'.$type);
     }
 }
