@@ -836,6 +836,11 @@ class Helper
         return $r;
     }
 
+    public static function newExportXml(){
+        $export = new xml\Export;
+        return $export->newSheet();
+    }
+
     /**
      * Validate and return the selected PhpSpreadsheet Object
      * 
