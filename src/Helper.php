@@ -836,9 +836,44 @@ class Helper
         return $r;
     }
 
+    /**
+     * author:itfee
+    */
     public static function newExportXml(){
         $export = new xml\Export;
         return $export->newSheet();
+    }
+
+    /**
+     * author:itfee
+    */
+    public static function setHeight($height){
+        self::validSheetObj()->getRowDimension(self::$_offsetRow)->setRowHeight($height);
+        return new static();
+    }
+
+    /**
+     * author:itfee
+    */
+    public static function cellValue($col,$row,$cell){
+        $col = is_numeric($col) ? $col : self::alpha2num(strtoupper($col));
+        $row = $row ?? self::$_offsetRow;
+
+        $sheetObj = self::validSheetObj();
+        $cellValue = function($posCol,$value) use ($sheetObj,$row){//跟后面的
+            if(is_array($value)){
+                //设置类型时
+                if(isset($value['type']) && ($cellType = self::datatype($value['type']))){
+                    $sheetObj->setCellValueExplicitByColumnAndRow($posCol, $row, $value['value'], $cellType);
+                }else{
+                    $sheetObj->setCellValueByColumnAndRow($posCol, $row, $value['value']);
+                }
+            }else{
+                $sheetObj->setCellValueByColumnAndRow($posCol, $row, $value);
+            }
+        };
+        $cellValue($col,$cell);
+        return new static();
     }
 
     /**
