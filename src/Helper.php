@@ -5,17 +5,16 @@ use Exception;
 
 /**
  * PhpSpreadsheet Helper
- * 
- * @author      Nick Tsai <myintaer@gmail.com>
- * @version     1.3.6
- * @filesource 	PhpSpreadsheet <https://github.com/PHPOffice/PhpSpreadsheet>
- * @see         https://github.com/yidas/phpspreadsheet-helper
+ *
+ * @version     1.4.0
+ * @filesource  PhpSpreadsheet <https://github.com/PHPOffice/PhpSpreadsheet>
+ * @see         https://github.com/royfee/spreadsheet
  * @example
- *  \yidas\phpSpreadsheet\Helper::newExcel()
+ *  \royfee\spreadsheet\Helper::newSpreadsheet()
  *      ->addRow(['ID', 'Name', 'Email'])
  *      ->addRows([
- *          ['1', 'Nick','myintaer@gmail.com'],
- *          ['2', 'Eric','eric@.....'],
+ *          ['1', 'Nick','nick@example.com'],
+ *          ['2', 'Eric','eric@example.com'],
  *      ])
  *      ->output('My Excel');
  */
@@ -27,7 +26,7 @@ class Helper
     private static $_objSpreadsheet;
     
     /**
-     * @var object Cached PhpSpreadsheet Sheet object
+     * @var object|null Cached PhpSpreadsheet Sheet object
      */
     private static $_objSheet;
 
@@ -57,12 +56,13 @@ class Helper
     private static $_keyRowMap;
 
     /**
-     * @var int Map of ranges by keys
+     * @var array<string, string> Map of ranges by keys
      */
-    private static $_keyRangeMap;
+    private static $_keyRangeMap = [];
 
     /**
      * Extension list for reader
+     * @var array<string, string>
      */
     private static $_readerExtensions = [
         'Excel5' => '.xls',
@@ -158,7 +158,7 @@ class Helper
     /** 
      * Set an active PhpSpreadsheet Sheet
      * 
-     * @param object|int $sheet PhpSpreadsheet sheet object or index number
+     * @param object|int|null $sheet PhpSpreadsheet sheet object or index number
      * @param string $title Sheet title
      * @param bool $normalizeTitle Auto-normalize title rule 
      * @return self
@@ -334,12 +334,12 @@ class Helper
             if(is_array($value)){
                 //设置类型时
                 if(isset($value['type']) && ($cellType = self::datatype($value['type']))){
-                    $sheetObj->setCellValueExplicitByColumnAndRow($posCol, self::$_offsetRow, $value['value'], $cellType);
+                    $sheetObj->setCellValueExplicit([$posCol, self::$_offsetRow], $value['value'], $cellType);
                 }else{
-                    $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value['value']);
+                    $sheetObj->setCellValue([$posCol, self::$_offsetRow], $value['value'] ?? '');
                 }
             }else{
-                $sheetObj->setCellValueByColumnAndRow($posCol, self::$_offsetRow, $value);
+                $sheetObj->setCellValue([$posCol, self::$_offsetRow], $value);
             }
         };
 
@@ -551,13 +551,13 @@ class Helper
      * Get data of a row from the actived sheet of PhpSpreadsheet
      * 
      * @param bool $toString All values from sheet to be string type
-     * @param bool $options [
-     *  row (int) Ended row number
-     *  column (int) Ended column number
+     * @param array $options [
+     *  columnOffset (int) Column offset
+     *  columns (int) Ended column number
      *  timestamp (bool) Excel datetime to Unixtime
-     *  timestampFormat (string) Format for date() when usgin timestamp
-     *  ]
-     * @param callable $callback($cellValue, int $columnIndex, int $rowIndex)
+     *  timestampFormat (string) Format for date() when using timestamp
+     * ]
+     * @param callable|null $callback($cellValue, int $columnIndex, int $rowIndex)
      * @return array Data of Spreadsheet
      */
     public static function getRow($toString=true, $options=[], callable $callback=null)
@@ -588,7 +588,7 @@ class Helper
         // Fetch data from the sheet
         $data = [];
         for ($col = $startColumn + 1; $col <= $columns; ++$col) {
-            $cell = $worksheet->getCellByColumnAndRow($col, self::$_offsetRow);
+            $cell = $worksheet->getCell([$col, self::$_offsetRow]);
             $value = $cell->getValue();
             // Timestamp option
             if ($options['timestamp'] && \PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($cell)) {
@@ -612,13 +612,14 @@ class Helper
      * Get rows from the actived sheet of PhpSpreadsheet
      * 
      * @param bool $toString All values from sheet to be string type
-     * @param bool $options [
-     *  row (int) Ended row number
-     *  column (int) Ended column number
+     * @param array $options [
+     *  rowOffset (int) Start row offset
+     *  rows (int) Ended row number
+     *  columns (int) Ended column number
      *  timestamp (bool) Excel datetime to Unixtime
-     *  timestampFormat (string) Format for date() when usgin timestamp
-     *  ]
-     * @param callable $callback($cellValue, int $columnIndex, int $rowIndex)
+     *  timestampFormat (string) Format for date() when using timestamp
+     * ]
+     * @param callable|null $callback($cellValue, int $columnIndex, int $rowIndex)
      * @return array Data of Spreadsheet
      */
     public static function getRows($toString=true, Array $options=[], callable $callback=null)
@@ -658,6 +659,56 @@ class Helper
         }
 
         return $data;
+    }
+
+    /**
+     * Get rows from the actived sheet of PhpSpreadsheet using a Generator
+     * for memory-efficient reading of large datasets.
+     *
+     * @param bool $toString All values from sheet to be string type
+     * @param array $options [
+     *  rowOffset (int) Start row offset
+     *  rows (int) Ended row number
+     *  columns (int) Ended column number
+     *  timestamp (bool) Excel datetime to Unixtime
+     *  timestampFormat (string) Format for date() when using timestamp
+     * ]
+     * @param callable|null $callback($cellValue, int $columnIndex, int $rowIndex)
+     * @return \Generator Yields one row array at a time
+     */
+    public static function getRowsChunked($toString=true, Array $options=[], callable $callback=null)
+    {
+        $worksheet = self::validSheetObj();
+
+        $defaultOptions = [
+            'rowOffset' => 0,
+            'rows' => NULL,
+            'columns' => NULL,
+            'timestamp' => true,
+            'timestampFormat' => 'Y-m-d H:i:s',
+        ];
+        $options = array_replace($defaultOptions, $options);
+
+        $highestRow = $worksheet->getHighestRow();
+        $rowOffset = ($options['rowOffset'] && $options['rowOffset'] <= $highestRow)
+            ? $options['rowOffset']
+            : 0;
+        $rows = ($options['rows'] && ($rowOffset+$options['rows']) < $highestRow)
+            ? $options['rows']
+            : $highestRow - $rowOffset;
+
+        $options['columns'] = ($options['columns']) ?: self::alpha2num($worksheet->getHighestColumn());
+
+        self::$_offsetRow = $rowOffset;
+
+        $end = $rowOffset + $rows;
+        for ($i = 0; $i < $rows; $i++) {
+            $row = self::getRow($toString, $options, $callback);
+            if (empty($row)) {
+                break;
+            }
+            yield $row;
+        }
     }
 
     /**
@@ -706,10 +757,7 @@ class Helper
     }
 
     /**
-     * Get Range Map by key or all from the actived sheet
-     * 
-     * @param string|int $key Key set by addRow()
-     * @return string|array Range string | Key-Range array
+     * @return array<string, string>|string|null
      */
     public static function getRangeMap($key=NULL)
     {
@@ -810,21 +858,14 @@ class Helper
         $n = $n - 1;
         $r = '';
         for ($i = 1; $n >= 0 && $i < 10; $i++) {
-            $r = chr(0x41 + ($n % pow(26, $i) / pow(26, $i - 1))) . $r;
+            $r = chr(0x41 + (int)($n % pow(26, $i) / pow(26, $i - 1))) . $r;
             $n -= pow(26, $i);
         }
         return $r;
     }
 
     /**
-     * Alpha to Number
-     * 
-     * Optimizing from \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString()
-     * 
-     * @example
-     *  A => 1, AA => 27 
-     * @param int $n Excel column alpha
-     * @return string column number
+     * @return int Excel column number
      */
     public static function alpha2num($a)
     {
@@ -864,12 +905,12 @@ class Helper
             if(is_array($value)){
                 //设置类型时
                 if(isset($value['type']) && ($cellType = self::datatype($value['type']))){
-                    $sheetObj->setCellValueExplicitByColumnAndRow($posCol, $row, $value['value'], $cellType);
+                    $sheetObj->setCellValueExplicit([$posCol, $row], $value['value'], $cellType);
                 }else{
-                    $sheetObj->setCellValueByColumnAndRow($posCol, $row, $value['value']);
+                    $sheetObj->setCellValue([$posCol, $row], $value['value']);
                 }
             }else{
-                $sheetObj->setCellValueByColumnAndRow($posCol, $row, $value);
+                $sheetObj->setCellValue([$posCol, $row], $value);
             }
         };
         $cellValue($col,$cell);
@@ -901,7 +942,7 @@ class Helper
     /**
      * Validate and return the selected PhpSpreadsheet Sheet Object
      * 
-     * @param object $excelObj PhpSpreadsheet Sheet Object
+     * @param object|null $sheetObj PhpSpreadsheet Sheet Object
      * @return object Cached object or given object
      */
     private static function validSheetObj($sheetObj=NULL)

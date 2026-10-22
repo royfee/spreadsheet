@@ -2,7 +2,6 @@
 namespace royfee\spreadsheet\xml;
 
 class Export extends Excelxml{
-    private $_xml;
     private $_sheet = [];
     private $_sheetIndex = 0;
 
@@ -42,6 +41,16 @@ class Export extends Excelxml{
     public function output($filename){
         $this->createSheet();
         $this->sendWorkbook($filename);
+    }
+
+    public function getWorkbook(){
+        $this->createSheet();
+        return parent::getWorkbook();
+    }
+
+    public function writeWorkbook($filename, $path = ''){
+        $this->createSheet();
+        return parent::writeWorkbook($filename, $path);
     }
 
     private function createSheet(){

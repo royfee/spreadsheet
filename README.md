@@ -3,10 +3,10 @@ PHPSpreadsheet Helper
 
 PHP Excel Helper - Write and read Spreadsheet with easy way based on PhpSpreadsheet
 
-[![Latest Stable Version](https://poser.pugx.org/yidas/phpspreadsheet-helper/v/stable?format=flat-square)](https://packagist.org/packages/yidas/phpspreadsheet-helper)
-[![License](https://poser.pugx.org/yidas/phpspreadsheet-helper/license?format=flat-square)](https://packagist.org/packages/yidas/phpspreadsheet-helper)
-[![Total Downloads](https://poser.pugx.org/yidas/phpspreadsheet-helper/downloads?format=flat-square)](https://packagist.org/packages/yidas/phpspreadsheet-helper)
-[![Monthly Downloads](https://poser.pugx.org/yidas/phpspreadsheet-helper/d/monthly?format=flat-square)](https://packagist.org/packages/yidas/phpspreadsheet-helper)
+[![Latest Stable Version](https://poser.pugx.org/royfee/spreadsheet/v/stable?format=flat-square)](https://packagist.org/packages/royfee/spreadsheet)
+[![License](https://poser.pugx.org/royfee/spreadsheet/license?format=flat-square)](https://packagist.org/packages/royfee/spreadsheet)
+[![Total Downloads](https://poser.pugx.org/royfee/spreadsheet/downloads?format=flat-square)](https://packagist.org/packages/royfee/spreadsheet)
+[![Monthly Downloads](https://poser.pugx.org/royfee/spreadsheet/d/monthly?format=flat-square)](https://packagist.org/packages/royfee/spreadsheet)
 
 
 This library is a helper that encapsulate [PhpSpreadsheet](https://github.com/PHPOffice/PhpSpreadsheet) ([Documentation](https://phpspreadsheet.readthedocs.io/en/develop/)) for simple usage.
@@ -58,7 +58,7 @@ DEMONSTRATION
 Output an Excel file to browser for download:
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRow(['ID', 'Name', 'Email'])
     ->addRows([
         ['1', 'Nick','myintaer@gmail.com'],
@@ -67,14 +67,14 @@ Output an Excel file to browser for download:
     ->output('My Excel');
 ```
 
-<img src="https://raw.githubusercontent.com/yidas/phpspreadsheet-helper/master/img/demonstration.png" /> 
+<img src="https://raw.githubusercontent.com/royfee/spreadsheet/master/img/demonstration.png" />
 
 ### Read from Excel
 
 Import above excel file and return two-dimensional array data contained rows > columns spread sheet:
 
 ```php
-$data = \yidas\phpSpreadsheet\Helper::newSpreadsheet('/tmp/My Excel.xlsx')
+$data = \royfee\spreadsheet\Helper::newSpreadsheet('/tmp/My Excel.xlsx')
     ->getRows();
     
 print_r($data);
@@ -116,8 +116,8 @@ REQUIREMENTS
 
 This library requires the following:
 
+- PHP 8.2+
 - Dependent on [PhpSpreadsheet](https://phpspreadsheet.readthedocs.io/en/develop/#software-requirements)
-  - PHP 5.6.0+
   - PHP extension php-zip enabled
   - PHP extension php-xml enabled
   - PHP extension php-gd2 enabled (if not compiled in)
@@ -129,14 +129,14 @@ INSTALLATION
 
 Run Composer in your project:
 
-    composer require yidas/phpspreadsheet-helper
-    
+    composer require royfee/spreadsheet
+
 Then you could call it after Composer is loaded depended on your PHP framework:
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
 
-\yidas\phpSpreadsheet\Helper::newSpreadsheet();
+\royfee\spreadsheet\Helper::newSpreadsheet();
 ```
     
 ---
@@ -149,7 +149,7 @@ USAGE
 Simpliy read an Excel file then output to browser:
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet('/tmp/excel.xlsx')
+\royfee\spreadsheet\Helper::newSpreadsheet('/tmp/excel.xlsx')
     ->addRow(['Modified A1'])
     ->output();
 ```
@@ -183,7 +183,7 @@ public static string save(string $filename='excel', string $format='Xlsx')
 *Example:*
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRow(['Add A1'])
     ->save("/tmp/save");
 // /tmp/save.xlsx
@@ -202,7 +202,7 @@ public static array getRow(boolean $toString=true, array $options=[], callable $
 *Example:*
 
 ```php
-use \yidas\phpSpreadsheet\Helper;
+use \royfee\spreadsheet\Helper;
 
 $row1 = Helper::newSpreadsheet($filepath)
     ->getRow();
@@ -213,10 +213,10 @@ print_r($row1);
 print_r($row2);
 ```
 
-*Example of fetching content per each row ([Example Code](https://github.com/yidas/phpspreadsheet-helper/blob/master/demo/get-row-loop.php)):*
+*Example of fetching content per each row ([Example Code](https://github.com/royfee/spreadsheet/blob/master/examples/get-row-loop.php)):*
 
 ```php
-$helper = \yidas\phpSpreadsheet\Helper::newSpreadsheet($filepath);
+$helper = \royfee\spreadsheet\Helper::newSpreadsheet($filepath);
 
 while ($row = $helper->getRow()) {
     // Each row data process
@@ -252,7 +252,7 @@ public static self addRow(array $rowData, array $rowAttributes=null)
 *Example of setting attributes for each cell:*
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRow([['value'=>'ID'], ['value'=>'Name'], ['value'=>'Email']])
     ->addRow(['ID', 'Name', 'Email']);
 ```
@@ -260,7 +260,7 @@ public static self addRow(array $rowData, array $rowAttributes=null)
 *Example of setting attributes for each row:*
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     // Set width as 25 to all cells of this row
     ->addRow([['value'=>'ID'], ['value'=>'Name'], ['value'=>'Email']], ['width'=>25]);
 ```
@@ -303,7 +303,7 @@ $objSheet->setTitle('Sheet');
 $objSheet->setCellValue('A1', 'SN');
 
 // Inject PhpSpreadsheet Object and Sheet Object to Helper
-\yidas\phpSpreadsheet\Helper::newSpreadsheet($objSpreadsheet)
+\royfee\spreadsheet\Helper::newSpreadsheet($objSpreadsheet)
     ->setSheet($objSheet)
     ->setRowOffset(1) // Point to 1nd row from 0
     ->addRows([
@@ -316,7 +316,7 @@ $objSheet->setCellValue('A1', 'SN');
 #### Extract PhpSpreadsheet
 
 ```php
-use \yidas\phpSpreadsheet\Helper;
+use \royfee\spreadsheet\Helper;
 
 Helper::newSpreadsheet()
     ->setSheet(0, 'Sheet')
@@ -345,7 +345,7 @@ It's easy to merge cells by defining each cell's span attributes:
 - `skip` : Number of colspan cells to merge with  
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRows([
         [['value'=>'SN', 'row'=>2], ['value'=>'Language', 'col'=>2], ['value'=>'Block', 'row'=>2, 'col'=>2]],
         ['','English','繁體中文',['skip'=>2]],
@@ -378,7 +378,7 @@ public static object getSheet($identity=null, $autoCreate=false)
 *Example:*
 
 ```php
-use \yidas\phpSpreadsheet\Helper;
+use \royfee\spreadsheet\Helper;
 
 Helper::newSpreadsheet()
     ->setSheet(0, 'First Sheet')
@@ -413,7 +413,7 @@ Helper::output('MultiSheets');
 ### Map of Coordinates & Ranges
 
 ```php
-use \yidas\phpSpreadsheet\Helper;
+use \royfee\spreadsheet\Helper;
 
 Helper::newSpreadsheet()
     ->addRows([
@@ -481,7 +481,7 @@ The style attribute could be set on a [single cell](#addrow), a [single row](#ad
 * `style`: a attribute refers to `applyFromArray()` for styling
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     // Each cell with each style attributes
     ->addRow([
         'Percentage', 
@@ -534,7 +534,7 @@ The options for each cell data:
 * `width`: setWidth() for the column
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRow([['value'=>'ID', 'width'=>10], ['value'=>'Name', 'width'=>25], ['value'=>'Email', 'width'=>50]])
     ->addRows([
         ['1', 'Nick','myintaer@gmail.com'],
@@ -558,7 +558,7 @@ public static self setStyle(array $styleArray, string $range=NULL)
 *Example:*
 
 ```php
-\yidas\phpSpreadsheet\Helper::newSpreadsheet()
+\royfee\spreadsheet\Helper::newSpreadsheet()
     ->addRow(['Title', 'Content'])
     ->addRows([
         ['Basic Plan', "*Interface\n*Search Tool"],

@@ -1,6 +1,8 @@
 <?php
 namespace royfee\spreadsheet\xml;
 
+use Exception;
+
 
 /**
  * Class Excel_XML
@@ -186,7 +188,7 @@ class Excelxml{
          */
         private function getWorksheetTitle($title)
         {
-                $title = preg_replace ("/[\\\|:|\/|\?|\*|\[|\]]/", "", $title);
+                $title = preg_replace ("/[\\\|:|\/|\?|\*|\[|\]]/", "", (string)$title);
                 return substr ($title, 0, 31);
         }
 
@@ -249,11 +251,12 @@ class Excelxml{
                 $type = 'String';
                 if (is_numeric($item)):
                         $type = 'Number';
-                        if ($item[0] == '0' && strlen($item) > 1 && $item[1] != '.'):
+                        $itemStr = (string)$item;
+                        if ($itemStr[0] == '0' && strlen($itemStr) > 1 && $itemStr[1] != '.'):
                                 $type = 'String';
                         endif;
                 endif;
-                $item = str_replace('&#039;', '&apos;', htmlspecialchars($item, ENT_QUOTES));
+                $item = str_replace('&#039;', '&apos;', htmlspecialchars((string)$item, ENT_QUOTES));
                 $this->sOutput .= sprintf("            <Cell><Data ss:Type=\"%s\">%s</Data></Cell>\n", $type, $item);
         }
 
